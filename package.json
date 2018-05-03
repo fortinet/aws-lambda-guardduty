@@ -1,0 +1,44 @@
+{
+  "name": "aws_lambda_guardduty",
+  "version": "1.0.0",
+  "description": "Lambda function to be called in CloudWatch when GuardDuty sends logs to CloudWatch. This script will write the malicious IP to a dedicated file in an S3 bucket. Firewall service (i.e. FortiOS) can pull this list, and add those malicious IPs to the blacklist",
+  "main": "monitor.js",
+  "files_to_deploy": [
+    "monitor.js",
+    "package.json",
+    "package-lock.json"
+  ],
+  "dependencies": {
+    "q": "^1.5.1"
+  },
+  "devDependencies": {
+    "dpl": "^3.8.0",
+    "rimraf": "^2.6.2"
+  },
+  "scripts": {
+    "deploy": "dpl",
+    "build": "scripts/make_dist.js",
+    "install": "node -e \"try { require('./scripts/install_notes.js') } catch (e) {}\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fortinetsolutions/aws-lambda-guardduty.git"
+  },
+  "keywords": [
+    "aws",
+    "lambda",
+    "guardduty",
+    "fortinet",
+    "fortigate",
+    "fortios",
+    "blacklist",
+    "malicious",
+    "ips"
+  ],
+  "author": "fortinet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fortinetsolutions/aws-lambda-guardduty/issues"
+  },
+  "homepage": "https://github.com/fortinetsolutions/aws-lambda-guardduty#readme"
+}
