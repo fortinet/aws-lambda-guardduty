@@ -87,7 +87,7 @@ var monitor = function() {
         var out = '';
         if (ip) {
             if (ip && blacklist.indexOf(ip) < 0) {
-                blacklist += ip + "\r";
+                blacklist += ip + "\r\n";
                 _added.push(ip);
                 _found.push(ip);
             } else if (ip) {
