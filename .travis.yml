@@ -3,6 +3,7 @@ node_js: 4
 script:
   - npm install
   - npm run build
+  - git describe
 deploy:
   provider: releases
   api_key:
