@@ -12,3 +12,4 @@ deploy:
   on:
     repo: fortinet/aws-lambda-guardduty
     tags: true
+    all_branches: true
