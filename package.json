@@ -4,18 +4,25 @@
   "description": "Lambda function to be called in CloudWatch when GuardDuty sends logs to CloudWatch. This script will write the malicious IP to a dedicated file in an S3 bucket. Firewall service (i.e. FortiOS) can pull this list, and add those malicious IPs to the blacklist",
   "main": "monitor.js",
   "files_to_deploy": [
+    "utils/",
     "monitor.js",
+    "generator.js",
+    "index.js",
     "package.json",
     "package-lock.json"
   ],
   "dependencies": {
-    "q": "^1.5.1"
   },
   "devDependencies": {
     "dpl": "^3.8.0",
+    "eslint": "^5.2.0",
+    "jasmine": "^3.1.0",
+    "jasmine-node": "^1.15.0",
+    "request": "^2.87.0",
     "rimraf": "^2.6.2"
   },
   "scripts": {
+    "pretest": "./node_modules/.bin/eslint --fix *.js;",
     "deploy": "dpl",
     "build": "scripts/make_dist.js",
     "install": "node -e \"try { require('./scripts/install_notes.js') } catch (e) {}\""

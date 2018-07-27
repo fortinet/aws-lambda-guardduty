@@ -3,174 +3,139 @@
 /*
 Author: Fortinet
 
-The following Lambda function will be called in CloudWatch when GuardDuty sends logs to CloudWatch.
-This script will write the malicious IP to a dedicate file in S3 bucket. Firewall service (i.e. FortiOS) can
-pull this list, and add those malicious IPs to the blacklist.
+This monitor script handles the reporting and logging part of the Lambda function.
+Information about the Lambda function and configuration is provided in the main script: index.js.
 
-Currently the script has the following configurations (By environment variable):
-
-MIN_SEVERITY: (integer only)
-S3_BLACKLIST_KEY: (path to the file)
-S3_BUCKET: (S3 bucket name)
-
-The script will report the IP for the following conditions:
-
-1. For inbound connection direction, if severity is greater than or equal to MIN_SEVERITY
-2. For unknown connection direction, if the IP was flagged in the threat list name
-
-** This script will only focus on the external attack, internal attack won't get reported.
-Therefore, only remote IP will be stored to black list.
+Required IAM permissions:
+DynamoDB: UpdateItem
 
 */
+const
+    objectUtils = require('./utils/ObjectUtils.js'),
+    respArr = [];
 
+let docClient = null;
 
-require('extension/object_extension.js');
+/*
+ * set response for callback
+ */
+const setResp = (msg, detail) => {
+    respArr.push({
+        msg: msg,
+        detail: detail
+    });
+};
 
-var monitor = function() {
+/*
+ * clear response for callback
+ */
+const unsetResp = () => {
+    respArr.length = 0;
+};
 
-  const
-    _q = require('q'),
-    _aws = require('aws-sdk'),
-    _s3 = new _aws.S3(),
-    _s3_param = {
-        Bucket : process.env.S3_BUCKET,
-        Key : process.env.S3_BLACKLIST_KEY
-    };
+// updating ip address information into DynamoDB
+const updateDBTable = (findingId, ip, lastSeen) => {
+    return new Promise((resolve, reject) => {
+        let params = {
+            TableName: process.env.DDB_TABLE_NAME,
+            Key: {
+                finding_id: findingId,
+                ip: ip
+            },
+            ExpressionAttributeNames: {
+                '#last_seen': 'last_seen'
+            },
+            ExpressionAttributeValues: {
+                ':last_seen': lastSeen,
+                ':n_one': 1
+            },
+            UpdateExpression: 'SET #last_seen = :last_seen ADD detection_count :n_one'
+        };
 
-  var
-    _found = 0,
-    _added = 0,
-    _resp = [],
-    _s3_get = function() {
-        var deferred = _q.defer();
-        _s3.getObject(_s3_param, function(error, data) {
-            if (error) {
-                deferred.reject(error);
+        docClient.update(params, function(err, data) {
+            if (err) {
+                console.log('called updateDBTable and returned with error:', err.stack);
+                reject('Unable to Update ip into DynamoDB Table.');
             } else {
-                deferred.resolve(data);
+                console.log('called updateDBTable: ' +
+                    `finding entry (${findingId}) updated into DB.`);
+                resolve(data);
             }
         });
+    });
+};
 
-        return deferred.promise;
-    },
-    _s3_put = function(data) {
-        var tmp_param = Object.assign({}, _s3_param);
-        var deferred = _q.defer();
-
-        tmp_param.Body = data;
-        tmp_param.ACL = 'public-read';
-        tmp_param.ContentType = 'text/plain';
-
-        _s3.putObject(tmp_param, function(error, data) {
-            if (error) {
-                deferred.reject(error);
-            } else {
-                deferred.resolve(data);
-            }
-        });
-
-        return deferred.promise;
-    },
-    _set_resp = function(msg, detail) {
-        _resp.push({
-            msg: msg,
-            detail: detail
-        });
-    },
-    _unset_resp = function() {
-        _resp = [];
-    },
-
-    _build_ip_list = function(blacklist, ip) {
-        _found = [];
-        _added = [];
-        var out = '';
-        if (ip) {
-            if (ip && blacklist.indexOf(ip) < 0) {
-                blacklist += ip + "\r\n";
-                _added.push(ip);
-                _found.push(ip);
-            } else if (ip) {
-                _found.push(ip);
-            }
-        }
-        return blacklist;
-    },
-
-    handler = function(event, context, handler_cb) {
-        var min_severity = process.env.MIN_SEVERITY || 3,
-            detail = event.fetch('detail') || {},
-            ip = detail.fetch('service/action/networkConnectionAction/remoteIpDetails/ipAddressV4'),
-            direction = detail.fetch('service/action/networkConnectionAction/connectionDirection'),
-            threat_list_name = detail.fetch('service/additionalInfo/threatListName'),
-            blacklist = null;
-
-        _unset_resp();
-
-        if (!ip) {
-
-            _set_resp('IP not found', null);
-            handler_cb(null, _resp);
-
-        } else if(direction == 'OUTBOUND') {
-
-            _set_resp('Ignore OUTBOUND connection', null);
-            handler_cb(null, _resp);
-
-        } else if(direction == 'UNKNOWN' && !threat_list_name) {
-
-            _set_resp('Ignore UNKNOWN connection due to undefined threat list name', null);
-            handler_cb(null, _resp);
-
-        } else if (detail.severity >= min_severity) {
-
-            _s3_get()
-            .then(
-                function(data) {
-                    blacklist = _build_ip_list(data.Body.toString('ascii'), ip);
-                },
-                function(error) {
-                    if (error.fetch('statusCode') === 404) {
-                        blacklist = _build_ip_list('', ip);
-                        _set_resp('Create new blacklist.', null);
-                    } else {
-                        _set_resp('Get blacklist error.', error);
-                    }
-                }
-            ).then(
-                function() {
-                    return _s3_put(blacklist);
-                }
-            ).then(
-                function(data) {
-
-                    var msg = _found.length + ' IP addresses found, and '
-                            + _added.length + ' new IP addresses have been added to blacklist.';
-
-                    _set_resp(msg, {
-                        found: _found,
-                        added: _added,
-                        event: event
-                    });
-                },
-                function(error) {
-                    _set_resp('Put blacklist error', error);
-                }
-            ).done(function() {
-                console.log(JSON.stringify(_resp));
-                handler_cb(null, _resp);
-            });
-        } else {
-
-            _set_resp('Ignore due to severity less than ' + min_severity, null);
-            handler_cb(null, _resp);
-        }
+exports.handler = async (event, context, callback) => {
+    const AWS = require('aws-sdk');
+    // locking API versions
+    AWS.config.apiVersions = {
+        lambda: '2015-03-31',
+        s3: '2006-03-01',
+        dynamodb: '2012-08-10',
+        dynamodbstreams: '2012-08-10'
     };
 
-    return {
-        handler: handler
-    };
-}();
+    unsetResp();
 
-exports.handler = monitor.handler;
+    // verify all required process env variables
+    // check and set AWS region
+    if (!process.env.REGION) {
+        setResp('Must specify an AWS region.', null);
+        callback(null, respArr);
+        return;
+    }
 
+    if (!process.env.DDB_TABLE_NAME) {
+        setResp('Must specify an AWS DB Table name.', null);
+        callback(null, respArr);
+        return;
+    }
+
+    AWS.config.update({
+        region: process.env.REGION
+    });
+
+    docClient = new AWS.DynamoDB.DocumentClient();
+
+    const minSeverity = process.env.minSeverity || 3,
+        detail = objectUtils.fetch(event, 'detail') || {},
+        ip = objectUtils.fetch(detail,
+            'service/action/networkConnectionAction/remoteIpDetails/ipAddressV4'),
+        direction = objectUtils.fetch(detail,
+            'service/action/networkConnectionAction/connectionDirection'),
+        threatListName = objectUtils.fetch(detail,
+            'service/additionalInfo/threatListName'),
+        findingId = objectUtils.fetch(event, 'id'),
+        lastSeen = objectUtils.fetch(detail, 'service/eventLastSeen');
+
+    if (!ip) {
+
+        setResp('IP not found', null);
+        callback(null, respArr);
+
+    } else if (direction === 'OUTBOUND') {
+
+        setResp('Ignore OUTBOUND connection', null);
+        callback(null, respArr);
+
+    } else if (direction === 'UNKNOWN' && !threatListName) {
+
+        setResp('Ignore UNKNOWN connection due to undefined threat list name', null);
+        callback(null, respArr);
+
+    } else if (detail.severity >= minSeverity) {
+        try {
+            await updateDBTable(findingId, ip, lastSeen);
+            setResp(`finding entry (${findingId}) updated into DB.`, null);
+        } catch (err) {
+            setResp('There\'s a problem in updating ip to the DB. Please' +
+                ' see detailed information in CloudWatch logs.', null);
+        } finally {
+            callback(null, respArr);
+        }
+    } else {
+
+        setResp(`Ignore due to severity less than ${minSeverity}`, null);
+        callback(null, respArr);
+    }
+};
