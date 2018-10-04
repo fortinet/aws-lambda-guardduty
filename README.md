@@ -63,11 +63,11 @@ For more information about Amazon GuardDuty, please see the [Amazon GuardDuty of
 ### Prerequisites
 
 See below for a list of tools required to deploy this project before installation. Some prerequisites are platform-specific. Choose the right one for your OS (e.g. Windows, Linux, macOS)
-  - [Node.js](https://nodejs.org/) (v6.5.0 or later)
+  - [Node.js](https://nodejs.org/) (v8.10.0 or later)
   - [Npm](https://www.npmjs.com/). Although npm comes with Node.js, check [here](https://docs.npmjs.com/getting-started/installing-node#installing-npm-from-the-nodejs-site) for how to install npm and manage npm version.
   - [AWS account](https://aws.amazon.com/).
   - [Git](https://git-scm.com/downloads) (latest version).
-  - *[Git Bash]() (latest version). Git Bash is a solution for Windows platform users to run the following installation steps. The article [Use git, ssh and npm on windows with Git Bash](https://blog.theodo.fr/2017/01/use-git-ssh-and-npm-on-windows-with-git-bash/) gives more information about setting up Git Bash on Windows. 
+  - *[Git Bash]() (latest version). Git Bash is a solution for Windows platform users to run the following installation steps. The article [Use git, ssh and npm on windows with Git Bash](https://blog.theodo.fr/2017/01/use-git-ssh-and-npm-on-windows-with-git-bash/) gives more information about setting up Git Bash on Windows.
 
 ### Installation Steps
 When you have all prerequisites ready, you can continue the installation steps as below. Please note the commands in each steps are intended to run in Terminal or Git Bash only.
@@ -210,7 +210,7 @@ Note DynamoDB tables and Lambda functions are region-specific so you must create
 
 1. Create a function that **author from scratch**.
     - Give it a unique name.
-    - Choose **Node.js 6.10** as its Runtime.
+    - Choose **Node.js 8.10** as its Runtime.
     - For Role, select **Choose an existing role**. Choose the role created in *Step 4. Setup IAM role and policies*.
 
 2. Setup **function code**.
@@ -224,7 +224,11 @@ Note DynamoDB tables and Lambda functions are region-specific so you must create
     - Add a key **S3_BLOCKLIST_KEY** and input a value of **ip_blocklist** or a different name as you wish.
     - Add a key **REGION** and input the AWS region where your Lambda function and DynamoDB table are situated. For example, the region of *US East (N. Virginia)* is *us-east-1*. For information about AWS Regions, please see [AWS Regions and Endpoints](https://docs.aws.amazon.com/general/latest/gr/rande.html).
     - Add a key **DDB_TABLE_NAME** and input the name of the DynamoDB table you have created in Step 3. (***my-aws-lambda-guardduty-db*** in this example)
-4. Save the Lambda function.
+
+4. Setup **Basic settings**
+    - Change Timeout from **3** sec to **15** sec
+
+5. Save the Lambda function.
 
 ### Step 6. Setup DynamoDB stream trigger
 > A trigger needs to add to the DynamoDB table created in Step 4. Setup DynamoDB table. This trigger is the key to cause the Lambda function to generator a full IP block list to a static file in the S3 bucket.

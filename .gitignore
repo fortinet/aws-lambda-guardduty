@@ -1,4 +1,41 @@
-/dist
-/node_modules
-npm-debug.log
-/local
+# project-specific
+**/dist
+**/local
+**/local*
+!scripts/local*
+
+# npm
+**/node_modules
+**/npm-debug.log
+**/package-lock.json
+
+# istanbul javascript test coverage
+**/.nyc_output
+
+# visual studio code
+**/.vscode
+**/*.code-workspace
+
+bin
+obj
+csx
+.vs
+edge
+Publish
+
+*.user
+*.suo
+*.cscfg
+*.Cache
+project.lock.json
+
+/packages
+/TestResults
+
+/tools/NuGet.exe
+/App_Data
+/secrets
+/data
+.secrets
+appsettings.json
+local.settings.json

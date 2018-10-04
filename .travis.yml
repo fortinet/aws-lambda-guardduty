@@ -1,5 +1,5 @@
 language: node_js
-node_js: 4
+node_js: 8.11.1
 script:
   - npm install
   - npm run build
@@ -9,8 +9,10 @@ deploy:
   api_key:
     secure: lRYKWxCFJfBbTkwCdYZ0QPIQDyfRRWhZNYAA8XFTtLR3/5bXJ1ZqlcnucdmEfLW0YEw8sPuQwp3MnDTcnmn6cN+kmphB9bCBARNvlolDw4WPmhLYO/1ZNFBERdvE8GT4Ruor6UVJJOJ5GzRFra4s5wosJnfugnViSHnbJsnP44zM4QwzFIP8b4Oj339jxqVKPgmEDAalJv9n7l4cx/wOyy000VKlc3dqDNtp2mRGL0aovTApwH2sMZbvWhIE1NOdNqDJJFHCp9ftK96Uienb0kHjB6pyPR+sep3794x6u4mfY6cIYfPzJWVhhRgVfCviKm7b8pyeagUCMkNJABjU0WICXIfv9tAvoMi8KTHf0WzwHuZOYPp9bBZJRAdC5hvggm+IbOUBgPxi4nFCo9hgbTsBkY3nvZFp1jmIa/ElfqKCzdWWu6a7OJs8aB6oNwqptKPRgfgT90uNSYZjPUAkzxI8xwuX7BzHL2Alfr1s6Kw7yjF57dCUEPtXPOTj+LUEGZkeOPTQgOYAxCDENKAp/iuERGoZC2Ri6b1rM8SLigQkaEJUo1+eSJdWx02vlLrEZ2F/WAVmeoL7ZQQ7xI3hsabGOraagKOtoR/g8eiOxrQFRGulHEgZegMTPqjfga3zWfa1ga1bBG8Md9dqbs4BkvzNTIPXeOz01J54fWkFgJA=
   file: dist/aws_lambda_guardduty.zip
+  file_glob: true
+  file: dist/*
   skip_cleanup: true
   on:
     repo: fortinet/aws-lambda-guardduty
     tags: true
-    all_branches: true
+    branch: master

@@ -1,8 +1,8 @@
 {
   "name": "aws_lambda_guardduty",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "Lambda function to be called in CloudWatch when GuardDuty sends logs to CloudWatch. This script will write the malicious IP to a dedicated file in an S3 bucket. Firewall service (i.e. FortiOS) can pull this list, and add those malicious IPs to the blacklist",
-  "main": "monitor.js",
+  "main": "index.js",
   "files_to_deploy": [
     "utils/",
     "monitor.js",
@@ -11,13 +11,13 @@
     "package.json",
     "package-lock.json"
   ],
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "dpl": "^3.8.0",
-    "eslint": "^5.2.0",
-    "jasmine": "^3.1.0",
-    "jasmine-node": "^1.15.0",
+    "eslint": "^5.4.0",
+    "eslint-plugin-mocha": "^5.2.0",
+    "mocha": "^5.2.0",
+    "nyc": "^13.0.1",
     "request": "^2.87.0",
     "rimraf": "^2.6.2"
   },
@@ -25,11 +25,11 @@
     "pretest": "./node_modules/.bin/eslint --fix *.js;",
     "deploy": "dpl",
     "build": "scripts/make_dist.js",
-    "install": "node -e \"try { require('./scripts/install_notes.js') } catch (e) {}\""
+    "test": "nyc mocha --recursive './test/mocha/*.js'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fortinetsolutions/aws-lambda-guardduty.git"
+    "url": "git+https://github.com/fortinet/aws-lambda-guardduty.git"
   },
   "keywords": [
     "aws",
@@ -45,7 +45,7 @@
   "author": "fortinet",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/fortinetsolutions/aws-lambda-guardduty/issues"
+    "url": "https://github.com/fortinet/aws-lambda-guardduty/issues"
   },
-  "homepage": "https://github.com/fortinetsolutions/aws-lambda-guardduty#readme"
+  "homepage": "https://github.com/fortinet/aws-lambda-guardduty#readme"
 }
