@@ -9,8 +9,8 @@ var pkg = require('../package.json'),
     path = require('path'),
     rimraf = require('rimraf');
 
-process.env.TMPDIR = fs
-    .mkdtempSync(path.join(process.env.TMPDIR || os.tmpdir(), `${pkg.name}-`)) + path.sep;
+process.env.TMPDIR =
+    fs.mkdtempSync(path.join(process.env.TMPDIR || os.tmpdir(), `${pkg.name}-`)) + path.sep;
 
 // Shorter version of node_modules/dpl/dpl.js which avoids the 'upload' phase
 
@@ -31,7 +31,8 @@ dpl.upload = function() {
 require('dpl/dpl.js');
 
 function copyFile(src, dest, cb) {
-    fs.createReadStream(src).pipe(fs.createWriteStream(dest))
+    fs.createReadStream(src)
+        .pipe(fs.createWriteStream(dest))
         .on('error', console.error)
         .on('close', cb);
 }

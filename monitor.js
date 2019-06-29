@@ -10,8 +10,7 @@ Required IAM permissions:
 DynamoDB: UpdateItem
 
 */
-const
-    objectUtils = require('./utils/ObjectUtils.js'),
+const objectUtils = require('./utils/ObjectUtils.js'),
     respArr = [];
 
 let docClient = null;
@@ -57,8 +56,9 @@ const updateDBTable = (findingId, ip, lastSeen) => {
                 console.log('called updateDBTable and returned with error:', err.stack);
                 reject('Unable to Update ip into DynamoDB Table.');
             } else {
-                console.log('called updateDBTable: ' +
-                    `finding entry (${findingId}) updated into DB.`);
+                console.log(
+                    'called updateDBTable: ' + `finding entry (${findingId}) updated into DB.`
+                );
                 resolve(data);
             }
         });
@@ -99,42 +99,41 @@ exports.handler = async (event, context, callback) => {
 
     const minSeverity = process.env.minSeverity || 3,
         detail = objectUtils.fetch(event, 'detail') || {},
-        ip = objectUtils.fetch(detail,
-            'service/action/networkConnectionAction/remoteIpDetails/ipAddressV4'),
-        direction = objectUtils.fetch(detail,
-            'service/action/networkConnectionAction/connectionDirection'),
-        threatListName = objectUtils.fetch(detail,
-            'service/additionalInfo/threatListName'),
+        ip = objectUtils.fetch(
+            detail,
+            'service/action/networkConnectionAction/remoteIpDetails/ipAddressV4'
+        ),
+        direction = objectUtils.fetch(
+            detail,
+            'service/action/networkConnectionAction/connectionDirection'
+        ),
+        threatListName = objectUtils.fetch(detail, 'service/additionalInfo/threatListName'),
         findingId = objectUtils.fetch(event, 'id'),
         lastSeen = objectUtils.fetch(detail, 'service/eventLastSeen');
 
     if (!ip) {
-
         setResp('IP not found', null);
         callback(null, respArr);
-
     } else if (direction === 'OUTBOUND') {
-
         setResp('Ignore OUTBOUND connection', null);
         callback(null, respArr);
-
     } else if (direction === 'UNKNOWN' && !threatListName) {
-
         setResp('Ignore UNKNOWN connection due to undefined threat list name', null);
         callback(null, respArr);
-
     } else if (detail.severity >= minSeverity) {
         try {
             await updateDBTable(findingId, ip, lastSeen);
             setResp(`finding entry (${findingId}) updated into DB.`, null);
         } catch (err) {
-            setResp('There\'s a problem in updating ip to the DB. Please' +
-                ' see detailed information in CloudWatch logs.', null);
+            setResp(
+                "There's a problem in updating ip to the DB. Please" +
+                    ' see detailed information in CloudWatch logs.',
+                null
+            );
         } finally {
             callback(null, respArr);
         }
     } else {
-
         setResp(`Ignore due to severity less than ${minSeverity}`, null);
         callback(null, respArr);
     }

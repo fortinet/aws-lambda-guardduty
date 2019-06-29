@@ -3,7 +3,8 @@
     "env": {
         "node": true,
         "commonjs": true,
-        "es6": true
+        "es6": true,
+        "mocha": true
     },
     "parserOptions": {
         "ecmaVersion": 8
@@ -90,7 +91,7 @@
         "operator-linebreak": ["error", "after"],
         "prefer-template": "error",
         "quote-props": ["error", "as-needed"],
-        "quotes": ["error", "single"],
+        "quotes": ["error", "single", {"avoidEscape": true}],
         "require-await": "error",
         "semi": ["error", "always", {
             "omitLastInOneLineBlock": true

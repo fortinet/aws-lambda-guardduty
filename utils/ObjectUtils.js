@@ -11,6 +11,8 @@ ObjectUtils.fetch = function(obj, path) {
 
     for (var i = 0, size = keys.length; i < size; i++) {
         var k = keys[i];
+        // TODO: fix this:
+        // eslint-disable-next-line no-prototype-builtins
         if (tmp.hasOwnProperty(k)) {
             tmp = tmp[k];
         } else if (typeof tmp[k] === 'undefined') {

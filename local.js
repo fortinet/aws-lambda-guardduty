@@ -31,7 +31,8 @@ var fs = require('fs');
 
 var event = null,
     context = {},
-    callback = function(context, response) { // eslint-disable-line no-shadow
+    // eslint-disable-next-line no-shadow
+    callback = function(context, response) {
         console.log('handle callback is called with:', response, context);
     };
 
@@ -41,9 +42,13 @@ if (process.argv[ARGV_PROCESS_ENV_SCRIPT] !== undefined) {
 }
 
 // if provided an event json file, use is. otherwise, use an empty event.
-if (process.argv[ARGV_PROCESS_EVENT_JSON] !== undefined &&
-    fs.existsSync(process.argv[ARGV_PROCESS_EVENT_JSON])) {
+if (
+    process.argv[ARGV_PROCESS_EVENT_JSON] !== undefined &&
+    fs.existsSync(process.argv[ARGV_PROCESS_EVENT_JSON])
+) {
     const data = fs.readFileSync(process.argv[ARGV_PROCESS_EVENT_JSON]);
+    // TODO: fix this:
+    // eslint-disable-next-line no-useless-catch
     try {
         event = JSON.parse(data);
     } catch (e) {

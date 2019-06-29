@@ -41,7 +41,8 @@ const bucketExists = () => {
         let params = {
             Bucket: process.env.S3_BUCKET
         };
-        S3.headBucket(params, function(err, data) { // eslint-disable-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars
+        S3.headBucket(params, function(err, data) {
             if (err) {
                 console.log('called bucketExists and return error: ', err.stack);
                 reject(err);
@@ -79,21 +80,24 @@ const scanDBTable = () => {
  */
 const getBlockListFile = () => {
     return new Promise((resolve, reject) => {
-        S3.getObject({
-            Bucket: process.env.S3_BUCKET,
-            Key: process.env.S3_BLOCKLIST_KEY
-        }, function(err, data) {
-            if (err && err.statusCode.toString() !== '404') {
-                console.log('called saveBlockListToBucket and return error: ', err.stack);
-                reject('Get ip block list error.');
-            } else {
-                if (err && err.statusCode.toString() === '404') {
-                    resolve('');
+        S3.getObject(
+            {
+                Bucket: process.env.S3_BUCKET,
+                Key: process.env.S3_BLOCKLIST_KEY
+            },
+            function(err, data) {
+                if (err && err.statusCode.toString() !== '404') {
+                    console.log('called saveBlockListToBucket and return error: ', err.stack);
+                    reject('Get ip block list error.');
                 } else {
-                    resolve(data.Body.toString('ascii'));
+                    if (err && err.statusCode.toString() === '404') {
+                        resolve('');
+                    } else {
+                        resolve(data.Body.toString('ascii'));
+                    }
                 }
             }
-        });
+        );
     });
 };
 
@@ -113,28 +117,31 @@ const saveBlockListFile = (items, blockList) => {
             found.add(finding.ip);
         });
 
-        S3.putObject({
-            Body: blockList,
-            Bucket: process.env.S3_BUCKET,
-            Key: process.env.S3_BLOCKLIST_KEY,
-            ACL: 'public-read',
-            ContentType: 'text/plain'
-        }, function(err, data) { // eslint-disable-line no-unused-vars
-            if (err) {
-                console.log('called saveBlockListToBucket and return error: ',
-                    err.stack);
-                reject('Put ip block list error');
-            } else {
-                console.log('called saveBlockListToBucket: no error.');
-                let msg = `${found.size} IP addresses found,
+        S3.putObject(
+            {
+                Body: blockList,
+                Bucket: process.env.S3_BUCKET,
+                Key: process.env.S3_BLOCKLIST_KEY,
+                ACL: 'public-read',
+                ContentType: 'text/plain'
+            },
+            // eslint-disable-next-line no-unused-vars
+            function(err, data) {
+                if (err) {
+                    console.log('called saveBlockListToBucket and return error: ', err.stack);
+                    reject('Put ip block list error');
+                } else {
+                    console.log('called saveBlockListToBucket: no error.');
+                    let msg = `${found.size} IP addresses found,
                         and ${added} new IP addresses have been added to ip block list.`;
-                setResp(msg, {
-                    found: found.size,
-                    added: added
-                });
-                resolve();
+                    setResp(msg, {
+                        found: found.size,
+                        added: added
+                    });
+                    resolve();
+                }
             }
-        });
+        );
     });
 };
 
@@ -189,8 +196,11 @@ exports.handler = async (event, context, callback) => {
         // update and save the ip block list file
         await saveBlockListFile(ipRecords, blockList);
     } catch (err) {
-        setResp('There\'s a problem in generating ip block list. Pleasesee detailed' +
-            ' information in CloudWatch logs.', null);
+        setResp(
+            "There's a problem in generating ip block list. Please see detailed" +
+                ' information in CloudWatch logs.',
+            null
+        );
     } finally {
         callback(null, respArr);
     }
