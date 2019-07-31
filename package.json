@@ -14,11 +14,11 @@
     "dependencies": {},
     "devDependencies": {
         "dpl": "^3.8.0",
-        "eslint": "^5.4.0",
+        "eslint": "^5.16.0",
         "eslint-plugin-mocha": "^5.2.0",
         "ftnt-devops-ci": "github:guardhao104/ftnt-devops-ci",
         "mocha": "^5.2.0",
-        "nyc": "^14.0.0",
+        "nyc": "^14.1.1",
         "request": "^2.87.0",
         "rimraf": "^2.6.2"
     },
