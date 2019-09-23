@@ -25,7 +25,7 @@
     "scripts": {
         "pretest": "./node_modules/.bin/eslint --fix *.js;",
         "deploy": "dpl",
-        "build": "scripts/make_dist.js",
+        "build": "node scripts/make_dist.js",
         "test": "nyc mocha --recursive './test/mocha/*.js'"
     },
     "repository": {

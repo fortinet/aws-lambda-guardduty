@@ -47,7 +47,7 @@ Installing and configuring the FortiGate `aws-lambda-guardduty` function require
 It is never recommended to attach a full control policy such as `AmazonS3FullAccess`, which has full permissions to all resources under your Amazon AWS account, to the role which runs the Lambda function. Allowing full-access permissions to all resources may put your resources at risk.
 
 # Installation
-> **Note:** The commands in each step are intended for use in Terminal (Linux or MacOS) or Git Bash (Windows) only.
+> **Note:** For Windows be sure `zip.exe` is available in the `%PATH%` (e.g. install from http://gnuwin32.sourceforge.net/packages/zip.htm and run `PATH=%PATH%;"c:\Program Files (x86)\GnuWin32\bin\"`, `$Env:PATH += ";c:\Program Files (x86)\GnuWin32\bin\"` or `export PATH=$PATH:/c/Program\ Files\ \(x86\)/GnuWin32/bin` depending on the shell )
 
 ## Step 1. Prepare the deployment package
 Create the deployment package from the local git project repository. In *Step 5. Create the Lambda function*, this package will be uploaded during Lambda function creation.
@@ -65,7 +65,7 @@ Create the deployment package from the local git project repository. In *Step 5.
     $ npm install
     ```
 
-3. Build this project locally. 
+3. Build this project locally.
 
     ```sh
     $ npm run build
@@ -287,7 +287,7 @@ To create the Lambda function:
 9. For **Handler**, enter **index.handler**.
 10. Under **Environment variables**, add the following key-value pairs:
     | Key | Value |
-    | ------ | ------ | 
+    | ------ | ------ |
     | **MIN_SEVERITY** | *3* |
     | **S3_BUCKET** | The name of the S3 bucket created in *Step 2. Create an S3 bucket* (***my-aws-lambda-guardduty***) |
     | **S3_BLOCKLIST_KEY** |*ip_blocklist* (or something else as the name of a file to store the malicious IP addresses.) |
@@ -340,7 +340,7 @@ To create an event rule:
      ```
 5. Under *Targets*:
     - Click **Add Target\***.
-    - From the dropdown list, ensure **Lambda function** is selected. 
+    - From the dropdown list, ensure **Lambda function** is selected.
     - For **Function**, select the Lambda function you created in *Step 5. Create the Lambda function*.
 6. Click **Configure details**.
 7. Enter a **Name** (E.g. ***aws-lambda-guardduty-finding-event-rule***).
