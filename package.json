@@ -1,6 +1,6 @@
 {
     "name": "aws_lambda_guardduty",
-    "version": "1.0.4",
+    "version": "1.0.8",
     "description": "Lambda function to be called in CloudWatch when GuardDuty sends logs to CloudWatch. This script will write the malicious IP to a dedicated file in an S3 bucket. Firewall service (i.e. FortiOS) can pull this list, and add those malicious IPs to the blacklist",
     "main": "index.js",
     "files_to_deploy": [
